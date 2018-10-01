@@ -1,0 +1,9 @@
+.spyproject/codestyle.ini
+.spyproject/encoding.ini
+.spyproject/vcs.ini
+.spyproject/workspace.ini
+__pycache__/__init__.cpython-36.pyc
+__pycache__/__init__.cpython-36.pyc
+__pycache__/analysis.cpython-36.pyc
+__pycache__/heuristics.cpython-36.pyc
+__pycache__/plot.cpython-36.pyc
