@@ -64,9 +64,13 @@ def components(n, region_data=None, line_data=None, index=None,
         ax = axes.flatten()[i]
         region_comp = get_comp(region_data, i+starting_component)
         region_comp = pd.Series(region_comp, index=n.buses.index).fillna(0)
-        line_comp = get_comp(line_data, i+starting_component)
-        line_comp = (line_comp.div(line_comp.abs().max())
-                     .where(lambda ds: ds > ds.quantile(flow_quantile),0))
+        if line_data is None:
+            line_comp = None
+        else:
+            line_comp = get_comp(line_data, i+starting_component)
+            line_comp = (line_comp.div(line_comp.abs().max())
+                         .where(lambda ds: ds.abs() >
+                                ds.abs().quantile(flow_quantile),0))
         if plot_regions:
             region_comp /= region_comp.abs().max()
             regions.loc[:,'weight'] = region_comp

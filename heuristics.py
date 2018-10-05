@@ -30,8 +30,8 @@ def renewable_generation(n):
 
 
 def flow(n):
-    return pd.concat([n.lines_t.p0, n.links_t.p0], keys=['Line', 'Link'], axis=1,
-              sort=False)
+    return pd.concat([n.lines_t.p0, n.links_t.p0], keys=['Line', 'Link'],
+                     axis=1, sort=False)
 
 
 
