@@ -19,7 +19,7 @@ import seaborn as sns
 
 plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
-sns.set_style('whitegrid')
+#sns.set_style('whitegrid')
 colors=sns.color_palette()
 
 
@@ -30,10 +30,10 @@ ylim_red=(36,65)
 
 
 def components(n, region_data=None, line_data=None, index=None,
-               plot_colorbar=False, figsize=(7,4.5),
+               plot_colorbar=False, figsize=(20,6),
                cmap='RdBu_r', subplots=(1,3),
                european_bounds=False, line_widths=1,
-               line_colors='darkgreen',
+               line_colors='darkgreen', plot_regions=None,
                regionsline_width=0.005,
                starting_component=0, busscale=0.1, calpha=1,
                colorbar_position='bottom', w_pad=0.4, h_pad = 0.4, pad=0.4,
@@ -47,11 +47,12 @@ def components(n, region_data=None, line_data=None, index=None,
     if isinstance(line_data, str):
         line_data = getattr(n.pca, line_data)
 
-    if 'regions' in n.__dir__():
-        regions = n.regions
-        plot_regions = True
-    else:
-        plot_regions = False
+    if plot_regions is None:
+        if 'regions' in n.__dir__():
+            regions = n.regions
+            plot_regions = True
+        else:
+            plot_regions = False
 
     if index is None:
         index = region_data.abbr if region_data is not None else line_data.abbr
@@ -87,7 +88,7 @@ def components(n, region_data=None, line_data=None, index=None,
                bus_colors=np.sign(region_comp),
                bus_cmap=cmap,
                boundaries=bounds,
-               basemap=True)
+               geomap=True)
 
 
         val = region_data.val if region_data is not None else line_data.val
@@ -97,7 +98,7 @@ def components(n, region_data=None, line_data=None, index=None,
         ax.set_facecolor('white')
         #plt.subplots_adjust(wspace=0.1, hspace=0.15)
     if plot_colorbar:
-        fig.tight_layout(pad=pad, h_pad=h_pad, w_pad=w_pad)
+        fig.canvas.draw(); fig.tight_layout(pad=pad, h_pad=h_pad, w_pad=w_pad)
 
         if colorbar_position == 'right':
             subplot_adjust.update({'right': subplot_adjust.get('right', 0.88)})
@@ -114,7 +115,7 @@ def components(n, region_data=None, line_data=None, index=None,
             ColorbarBase(cmap=cmap, norm=Normalize(vmin=-1, vmax=1), ax=cbar_ax,
                          alpha=calpha, orientation='horizontal')
     else:
-        fig.tight_layout(pad=pad)
+        fig.canvas.draw(); fig.tight_layout()
     return fig, axes
 
 

@@ -17,4 +17,4 @@ npca.analysis.pcs(n)
 npca.plot.components(n, region_data='topology', line_data='flow', plot_colorbar=True, figsize=(16,6), flow_quantile=0.9)
 
 ```
-![Example of European flow pc](https://user-images.githubusercontent.com/19226431/46303511-4f488680-c5ac-11e8-8115-3e4887cb98ee.png)
+![Example of European flow pc](https://user-images.githubusercontent.com/19226431/46303511-4f488680-c5ac-11e8-8115-3e4887cb98ee.png)k

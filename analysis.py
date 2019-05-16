@@ -17,8 +17,8 @@ class pcs:
                        'flow': flow(n),
                        'mismatch': renewable_mismatch(n),
                        'topology': pypsa.allocation.PTDF(n)}
-            for k, v in data_in.items():
-                setattr(self, k, calculate_pc(v, abbrev=k[0]))
+        for k, v in data_in.items():
+            setattr(self, k, calculate_pc(v, abbrev=k[0]))
         n.pca = self
 
 
