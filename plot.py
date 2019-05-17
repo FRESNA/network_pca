@@ -171,11 +171,6 @@ def fourrier_and_daytime(pcs, figsize=(7,3), subplots=(2,3)):
 
 
 
-# =============================================================================
-# old, not revised code:
-# =============================================================================
-
-
 def fourrier(pcs, subplots=(3,2), figsize=(7,3)):
     beta, val = pcs.beta, pcs.val
     beta_fourier = wrap_fft(beta.loc[:,:6])
@@ -190,66 +185,111 @@ def fourrier(pcs, subplots=(3,2), figsize=(7,3)):
         ax = next(ax_iter)
         ax.set_xlim(np.log(0.2), np.log(600))
         ax.plot(beta_fourier.index, beta_fourier.loc[:,i], c=colors[i])
-    #    ax.set_ylim(top=1.2 * beta_fourier.loc[:,i].max())
+        ax.hlines(0, *ax.get_xlim(), linestyles='dashed', alpha=0.4,
+                  color='grey')
         ax.set_xticks(np.log(xt))
         ax.set_xticklabels(xt, rotation=75)
         ax.ticklabel_format(axis='y', style='sci', scilimits=(-2,2))
-    #    ax.set_yscale('log')
         ax.locator_params(axis='y',nbins=4)  #specify number of ticks
-        if i==subplots[1]:
+        if i%(subplots[1])==0:
             ax.set_ylabel(r"PSD $[MW^2]$")
-        if i>subplots[0]*subplots[1]-subplots[1]-1:
+        if i > subplots[0]*subplots[1]-subplots[1]-1:
             ax.set_xlabel(r"period $[days]$")
-        ax.set_title(r'$\tilde \lambda_{} = {:.2}$'.format(i+1, val.loc[i]))
-    plt.tight_layout(pad=0.5)
-    plt.subplots_adjust(hspace=.7)
+        ax.set_title(r'$\lambda_{} = {:.2}$'.format(i+1, val.loc[i]))
+    fig.tight_layout(pad=0.5)
     return fig, ax
 
 
-def yearly_profile(pcs, std_free=False, number_of_rolling_weeks=12,
-                   figsize=(7,3.5), subplots=(3,2)):
+def yearly_profile(pcs, std_free=False, weeks=4,
+                   figsize=(7,4.), subplots=(2, 2), rolling=False):
     beta, val = pcs.beta, pcs.val
-    beta_normed = beta / np.sqrt((beta**2).mean().sum())
+
+
     fig, ax = plt.subplots(*subplots, figsize=figsize)
-    pattern = beta_normed.loc[:,:5].rolling(7*24*number_of_rolling_weeks,
-                             center=True).mean()
+    if rolling:
+        mean = beta.loc[:,:5].rolling(7*24*weeks, center=True).mean()
+        #std just for a quarter of mean window
+        std = beta.loc[:,:5].rolling(7*6*weeks, center=True).std()
+        title = r'$beta$ monthly window mean'
+
+    else:
+        mean = beta.loc[:,:5].resample(f'{weeks}w').mean()
+        #std just for a quarter of mean window
+        std = beta.loc[:,:5].resample(f'{weeks}w').std()
+        title = rf'$\beta$ averaged over {weeks} weeks'
+
+    ax_iter = ax.flat
+
+    for p in range(len(ax_iter)):
+        ax = next(ax_iter)
+#        ax.set_ylim(-np.abs(mean[p]).max(), np.abs(mean[p]).max())
+        line = mean[p].plot(ax=ax, sharex=True, color=colors[p])
+        ax.fill_between(mean.index, (mean-std)[p], (mean+std)[p], alpha=0.4,
+                        color=line.lines[0].get_color())
+        ax.hlines(0, *ax.get_xlim(), linestyles='dashed', alpha=0.5,
+                  color='grey')
+        ax.locator_params(axis='y',nbins=5, tight=False)
+        ax.set_xlabel('')
+        ax.ticklabel_format(axis='y', style='sci', scilimits=(-2,2))
+        ax.set_title(r'$\lambda_{} = {:.2}$'.format(p+1, val.loc[p]))
+        if p%(subplots[1])==0:
+            ax.set_ylabel(title)
+    fig.tight_layout(pad=0.5)
+    return fig, ax
+
+
+
+def daytime_profile(pcs, std_free=False, subplots=(2,3), figsize=(7,4)):
+    beta, val = pcs.beta, pcs.val
+    fig, ax = plt.subplots(*subplots, figsize=figsize)
     ax_iter = ax.flat
     beta_string = r'\tilde{\beta}' if std_free else r'\beta'
 
     for p in range(len(ax_iter)):
         ax = next(ax_iter)
-        ax.set_ylim(-np.abs(pattern[p]).max(), np.abs(pattern[p]).max())
-        pattern[p].plot(ax=ax, sharex=True, color=colors[p])
+        data = beta.iloc[:, p]
+        mean = data.groupby(beta.index.hour).mean()
+        std = data.groupby(beta.index.hour).std()
+
+        line = mean.plot(ax=ax, c=colors[p], sharex=True)
+        ax.fill_between(mean.index, mean-std, mean+std, alpha=0.5,
+                        color=line.lines[0].get_color())
+        ax.hlines(0, *ax.get_xlim(), linestyles='dashed', alpha=0.5,
+                  color='grey')
+        ax.set_xticks(range(24)[::3])
+        ax.set_xticklabels((mean.index.astype(str) + ':00')[::3], rotation=75)
         ax.locator_params(axis='y',nbins=5, tight=False)
-        ax.set_xlabel('')
+        ax.set_xlabel('daytime h')
+        ax.ticklabel_format(axis='y', style='sci', scilimits=(-2,2))
+        ax.set_ylim(- max(abs(ax.get_yticks())), max(abs(ax.get_yticks())))
         ax.set_title(r'$\tilde \lambda_{} = {:.2}$'.format(p+1, val.loc[p]))
-        if p==2:
+        if p%(subplots[1])==0:
             ax.set_ylabel(
-            r'$\sum_{t_i = t-\Delta t}^{t+\Delta t}%s_k(t_i)/(2 \Delta t + 1)$'
-                    %beta_string)
-    plt.tight_layout(pad=0.5)
-    plt.subplots_adjust(hspace=0.7)
+            r'$\left<\, %s_k(t=h)\; \right>_t$'%beta_string)
+    fig.tight_layout(pad=0.5)
     return fig, ax
 
 
-def weekly_mean(pcs, figsize=(7,3.5), subplotrange=(3,2)):
+def weekly_mean(pcs, figsize=(7,4), subplots=(2,2)):
     beta, val = pcs.beta, pcs.val
-    beta_normed = beta / np.sqrt((beta**2).mean().sum())
-    fig, ax = plt.subplots(subplotrange[0], subplotrange[1],  figsize=figsize)
-    pattern = beta_normed.loc[:,:5].resample('14d').mean().dropna()
+    fig, ax = plt.subplots(*subplots,  figsize=figsize)
+    data = (beta.groupby((beta.index.dayofweek) * 24 +
+                         (beta.index.hour)).mean()\
+                .rename_axis('Hour of week'))
     ax_iter = ax.flat
 
     for p in range(len(ax_iter)):
         ax = next(ax_iter)
-        ax.set_ylim(-np.abs(pattern[p]).max(), np.abs(pattern[p]).max())
-        pattern[p].plot(ax=ax, sharex=True, color=colors[p])
+#        ax.set_ylim(-np.abs(data[p]).max(), np.abs(data[p]).max())
+        data[p].plot(ax=ax, sharex=True, color=colors[p])
+        ax.hlines(0, *ax.get_xlim(), linestyles='dashed', alpha=0.5,
+                  color='grey')
         ax.locator_params(axis='y',nbins=5, tight=False)
-        ax.set_xlabel('')
+        ax.ticklabel_format(axis='y', style='sci', scilimits=(-2,2))
         ax.set_title(r'$\tilde \lambda_{} = {:.2}$'.format(p+1, val.loc[p]))
-        if p==2:
-            ax.set_ylabel('weekly mean')
-    plt.tight_layout()
-    plt.subplots_adjust(hspace=0.7)
+        if p%(subplots[1])==0:
+            ax.set_ylabel(r'$\beta$ average over hour of week')
+    fig.tight_layout(pad=0.5)
     return fig, ax
 
 
@@ -289,32 +329,6 @@ def farmer_and_cumsum(pcs, head=None, tail=None):
     ax2.set_ylabel(r'$\sum\tilde \lambda_k$')
     ax2.set_xlabel(r'$k$')
     plt.tight_layout(pad=0.5)
-    return fig, ax
-
-
-def daytime_profile(pcs, std_free=False, subplots=(2,3), figsize=(7,3)):
-    beta, val = pcs.beta, pcs.val
-    fig, ax = plt.subplots(*subplots, figsize=figsize)
-    ax_iter = ax.flat
-    beta_string = r'\tilde{\beta}' if std_free else r'\beta'
-
-    for p in range(len(ax_iter)):
-        ax = next(ax_iter)
-        hmean = pd.Series([beta.loc[beta.index.hour==i, p].mean()
-                           for i in range(24)])
-        hmean.plot(ax=ax, c=colors[p], sharex=True)
-        ax.set_xticks(range(24)[::3])
-        ax.set_xticklabels((hmean.index.astype(str) + ':00')[::3], rotation=75)
-        ax.locator_params(axis='y',nbins=5, tight=False)
-        ax.set_xlabel('daytime h')
-        ax.ticklabel_format(axis='y', style='sci', scilimits=(-2,2))
-        ax.set_ylim(- max(abs(ax.get_yticks())), max(abs(ax.get_yticks())))
-        ax.set_title(r'$\tilde \lambda_{} = {:.2}$'.format(p+1, val.loc[p]))
-        if (p==0 or p==3):
-            ax.set_ylabel(
-            r'$\left<\, %s_k(t=h)\; \right>_t$'%beta_string)
-    plt.tight_layout(pad=0.5)
-    plt.subplots_adjust(hspace=0.5)
     return fig, ax
 
 
