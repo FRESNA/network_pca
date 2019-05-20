@@ -32,9 +32,9 @@ ylim_red=(36,65)
 def components(n, region_data=None, line_data=None, index=None,
                plot_colorbar=False, figsize=(20,6),
                cmap='RdBu_r', subplots=(1,3),
-               european_bounds=False, line_widths=1,
+               bounds=[-10. , 45, 36, 72], line_widths=1,
                line_colors='darkgreen', plot_regions=None,
-               regionsline_width=0.005,
+               regionsline_width=0.005, title_prefix='',
                starting_component=0, busscale=0.1, calpha=1,
                colorbar_position='bottom', w_pad=0.4, h_pad = 0.4, pad=0.4,
                subplot_adjust={}, networkplot={}, flow_quantile=0.):
@@ -57,10 +57,9 @@ def components(n, region_data=None, line_data=None, index=None,
     if index is None:
         index = region_data.abbr if region_data is not None else line_data.abbr
 
-    bounds = xlim + ylim if european_bounds else None
-
+    crs = ccrs.PlateCarree()
     fig, axes = plt.subplots(*subplots, figsize=figsize, squeeze=0,
-                             subplot_kw={"projection":ccrs.PlateCarree()})
+                             subplot_kw={"projection":crs})
     for i in range(axes.size):
         ax = axes.flatten()[i]
         region_comp = get_comp(region_data, i+starting_component)
@@ -75,6 +74,8 @@ def components(n, region_data=None, line_data=None, index=None,
         if plot_regions:
             region_comp /= region_comp.abs().max()
             regions.loc[:,'weight'] = region_comp
+#            crs_proj4 = crs.proj4_init
+#            df = regions.to_crs(crs_proj4)
             regions.plot(cmap=cmap, column='weight', ax=ax, vmin=-1., vmax=1.,
                          linewidth=regionsline_width*figsize[0], alpha=calpha,
                          edgecolor='k')
@@ -92,9 +93,8 @@ def components(n, region_data=None, line_data=None, index=None,
 
 
         val = region_data.val if region_data is not None else line_data.val
-        ax.set_title(r'$\tilde \lambda^{}_{} = {:.2}$'
-                     .format(index, i+1+starting_component,
-                     val.loc[i+starting_component]))
+        ax.set_title(fr'{title_prefix}$\lambda_{i+1+starting_component}'
+                        fr' = {round(val.loc[i+starting_component], 2)}$')
         ax.set_facecolor('white')
         #plt.subplots_adjust(wspace=0.1, hspace=0.15)
     if plot_colorbar:
