@@ -1,0 +1,15 @@
+Metadata-Version: 1.1
+Name: network-pca
+Version: 0.0.1
+Summary: Toolset for Principal Component Analysis on PyPSA networks
+Home-page: https://github.com/FRESNA/network_pca
+Author: Fabian Hofmann (FIAS)
+Author-email: hofmann@fias.uni-frankfurt.de
+License: GPLv3
+Description: UNKNOWN
+Platform: UNKNOWN
+Classifier: Environment :: Console
+Classifier: Intended Audience :: Science/Research
+Classifier: License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)
+Classifier: Natural Language :: English
+Classifier: Operating System :: OS Independent

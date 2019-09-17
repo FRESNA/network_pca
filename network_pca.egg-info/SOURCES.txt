@@ -1,0 +1,6 @@
+README.md
+setup.py
+network_pca.egg-info/PKG-INFO
+network_pca.egg-info/SOURCES.txt
+network_pca.egg-info/dependency_links.txt
+network_pca.egg-info/top_level.txt
