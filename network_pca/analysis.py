@@ -63,6 +63,12 @@ def decomposition_pcs(df, abbrev=None):
     return Dict(vec=vec, val=val, beta=beta, mean=mean, C=C, abbr=abbrev)
 
 
+def adjust_sign(pcs):
+    sign = np.sign(pcs.beta.mean())
+    pcs.vec *= sign
+    pcs.beta *= sign
+    return pcs
+
 def variance_pcs(df, abbrev=None):
     '''
     Ordinary PCA with substracting mean from original data set and scaling of the
