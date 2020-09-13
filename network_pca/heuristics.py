@@ -11,9 +11,6 @@ import pandas as pd
 import pypsa
 
 
-# %% set up the network, define generators_t.pset, mismatch
-
-
 def renewables_i(n):
     return n.generators_t.p_max_pu.columns
 

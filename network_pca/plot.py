@@ -180,7 +180,7 @@ def daytime_profile(pcs, ax, i=1, set_title=False, set_ylabel=False):
     mean = beta.groupby(beta.index.hour).mean()
     std = beta.groupby(beta.index.hour).std()
 
-    line = mean.plot(ax=ax, c=colors(i), sharex=True)
+    line = mean.plot(ax=ax, c=colors(i))
     ax.fill_between(mean.index, mean-std, mean+std, alpha=0.2,
                     color=line.lines[0].get_color())
     ax.hlines(0, *ax.get_xlim(), linestyles='dashed', alpha=0.5,

@@ -41,13 +41,15 @@ class pcs:
 
 
 def covariance(df):
-    return df.T @ df
+    return df.T @ df / (len(df) - 1)
 
 def eigvec(df):
-    return pd.DataFrame(np.linalg.eig(df)[1], df.index, range(1, 1+len(df)))
+    return (pd.DataFrame(np.linalg.eig(df)[1], df.index, range(1, 1+len(df)))\
+            .applymap(np.real))
 
 def eigval(df):
-    return pd.Series(np.linalg.eigvals(df), range(1, 1+len(df)))
+    return (pd.Series(np.linalg.eigvals(df), range(1, 1+len(df)))
+            .apply(np.real))
 
 def decomposition_pcs(df, abbrev=None):
     '''
@@ -75,11 +77,14 @@ def variance_pcs(df, abbrev=None):
     Covariance matrix.
     '''
     mean = df.mean()
-    C = covariance(df - mean).pipe(lambda C: C/np.trace(C))
+    C = covariance(df - mean)
+    trace = np.trace(C)
+    C /= trace
     val = eigval(C)
     vec = eigvec(C)
     beta = df @ vec
-    return Dict(vec=vec, val=val, beta=beta, mean=mean, C=C, abbr=abbrev)
+    return Dict(vec=vec, val=val, beta=beta, mean=mean, C=C, abbr=abbrev,
+                trace=trace)
 
 
 def approximate(pcs, M=0):
