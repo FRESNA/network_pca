@@ -17,9 +17,6 @@ import pandas as pd
 import seaborn as sns
 
 
-plt.rc('text', usetex=True)
-plt.rc('font', family='serif')
-#sns.set_style('whitegrid')
 colors = lambda i: sns.color_palette()[i%len(sns.color_palette())]
 
 
