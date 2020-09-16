@@ -82,7 +82,7 @@ def variance_pcs(df, abbrev=None):
     C /= trace
     val = eigval(C)
     vec = eigvec(C)
-    beta = df @ vec
+    beta = (df - df.mean()) @ vec
     return Dict(vec=vec, val=val, beta=beta, mean=mean, C=C, abbr=abbrev,
                 trace=trace)
 
