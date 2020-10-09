@@ -43,13 +43,14 @@ class pcs:
 def covariance(df):
     return df.T @ df / (len(df) - 1)
 
-def eigvec(df):
-    return (pd.DataFrame(np.linalg.eig(df)[1], df.index, range(1, 1+len(df)))\
-            .applymap(np.real))
 
-def eigval(df):
-    return (pd.Series(np.linalg.eigvals(df), range(1, 1+len(df)))
-            .apply(np.real))
+def eig(df):
+    v, w = np.linalg.eig(df)
+    idx = v.argsort()[::-1]
+    v = pd.Series(v[idx], range(1, 1+len(df)))
+    w = pd.DataFrame(w[:,idx], df.index, range(1, 1+len(df)))
+    return v, w
+
 
 def decomposition_pcs(df, abbrev=None):
     '''
@@ -59,8 +60,7 @@ def decomposition_pcs(df, abbrev=None):
     '''
     mean = df.mean()
     C = covariance(df)
-    val = eigval(C)
-    vec = eigvec(C)
+    val, vec = eig(C)
     beta = df @ vec
     return Dict(vec=vec, val=val, beta=beta, mean=mean, C=C, abbr=abbrev)
 
@@ -80,8 +80,7 @@ def variance_pcs(df, abbrev=None):
     C = covariance(df - mean)
     trace = np.trace(C)
     C /= trace
-    val = eigval(C)
-    vec = eigvec(C)
+    val, vec = eig(C)
     beta = (df - df.mean()) @ vec
     return Dict(vec=vec, val=val, beta=beta, mean=mean, C=C, abbr=abbrev,
                 trace=trace)
